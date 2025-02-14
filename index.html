@@ -163,50 +163,47 @@
     // เสียงตอบกลับ
     const messageSound = new Audio('https://assets.mixkit.co/active_storage/sfx/3003/3003-preview.mp3');
 
-    // ฟังก์ชันสำหรับส่งข้อความ
     async function sendMessage() {
-      const userInput = document.getElementById('user-input');
-      const message = userInput.value.trim();
+  const userInput = document.getElementById('user-input');
+  const message = userInput.value.trim();
 
-      if (!message) return;
+  if (!message) return;
 
-      // แสดงข้อความผู้ใช้
-      appendMessage('user', message);
-      userInput.value = '';
+  appendMessage('user', message);
+  userInput.value = '';
 
-      // แสดง Loading Animation
-      const loadingElement = document.createElement('div');
-      loadingElement.classList.add('loading');
-      loadingElement.textContent = 'กำลังพิมพ์';
-      document.getElementById('chat-messages').appendChild(loadingElement);
+  const loadingElement = document.createElement('div');
+  loadingElement.classList.add('loading');
+  loadingElement.textContent = 'กำลังพิมพ์';
+  document.getElementById('chat-messages').appendChild(loadingElement);
 
-      // เรียก API เพื่อรับข้อความจาก AI
-      try {
-        const response = await fetch('https://script.google.com/macros/s/AKfycbwM2hnL6NnaT0T_57ZheFfbzwi9uQwUevPvjCv_61xfMrMvC29AqvV_YkdjK8GOhSs/exec', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ message: message }),
-        });
+  try {
+    const response = await fetch('https://script.google.com/macros/s/AKfycbwM2hnL6NnaT0T_57ZheFfbzwi9uQwUevPvjCv_61xfMrMvC29AqvV_YkdjK8GOhSs/exec', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ message: message }),
+    });
 
-        const data = await response.json();
-        const botMessage = data.reply;
-
-        // ลบ Loading Animation
-        loadingElement.remove();
-
-        // แสดงข้อความ AI
-        appendMessage('bot', botMessage);
-
-        // เล่นเสียงเมื่อได้รับข้อความใหม่
-        messageSound.play();
-      } catch (error) {
-        console.error('Error:', error);
-        loadingElement.remove();
-        appendMessage('bot', 'เกิดข้อผิดพลาดในการเชื่อมต่อกับ AI');
-      }
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+
+    const data = await response.json();
+    const botMessage = data.reply;
+
+    loadingElement.remove();
+    appendMessage('bot', botMessage);
+    messageSound.play();
+  } catch (error) {
+    console.error('Error:', error);
+    loadingElement.remove();
+    appendMessage('bot', `เกิดข้อผิดพลาด: ${error.message}`);
+  }
+}
+
+
 
     // ฟังก์ชันสำหรับแสดง Emoji Picker
     function toggleEmojiPicker() {
